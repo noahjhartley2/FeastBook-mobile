@@ -26,6 +26,7 @@ const RegisterScreen = ({navigation}) => {
         setErrortext('');
         if (!firstName || !lastName) {
             alert('First and last name required');
+            return;
         }
         if (!username) {
             alert('Username required');
@@ -43,6 +44,10 @@ const RegisterScreen = ({navigation}) => {
             alert('Passwords must match');
             return;
         }
+        if (userPassword1 !== userPassword2) {
+            alert('Passwords must match');
+            return;
+        }
         setLoading(true);
         let dataToSend = {
             firstName: firstName,
@@ -51,28 +56,21 @@ const RegisterScreen = ({navigation}) => {
             password: userPassword1,
             email: userEmail
         };
-        let formBody = [];
-        for (let key in dataToSend) {
-            let encodedKey = encodeURIComponent(key);
-            let encodedValue = encodeURIComponent(dataToSend[key]);
-            formBody.push(encodedKey + '=' + encodedValue);
-        }
-        formBody = formBody.join('&');
-
-        fetch('https://feastbook.herokuapp.com/api/register', {
+        let s = JSON.stringify(dataToSend);
+        fetch('http://feastbook.herokuapp.com/api/register', {
             method: 'POST',
-            body: formBody,
             headers: {
-                'Content-Type':
-                'application/x-www-form-urlencoded;charset=UTF-8',
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
             },
+            body: s,
         })
         .then((response) => response.json())
-        .then((responseJson) => {
+        .then((response) => {
             setLoading(false);
-            console.log(responseJson);
+            console.log(response);
             
-            if (responseJson.status == 'success') {
+            if (response.added === true) {
                 navigation.navigate('LoginScreen');
             }
             else {

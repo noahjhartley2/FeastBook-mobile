@@ -20,7 +20,7 @@ const LoginScreen = ({navigation}) => {
 
     const handleSubmitPress = () => {
         setErrortext('');
-        if (!userEmail) {
+        if (!username) {
             alert('Email required');
             return;
         }
@@ -30,34 +30,26 @@ const LoginScreen = ({navigation}) => {
         }
         setLoading(true);
         let dataToSend = {login: username, password: userPassword};
-        let formBody = [];
-        for (let key in dataToSend) {
-            let encodedKey = encodeURIComponent(key);
-            let encodedValue = encodeURIComponent(dataToSend[key]);
-            formBody.push(encodedKey + '=' + encodedValue);
-        }
-        formBody = formBody.join('&');
-
-        fetch('https://feastbook.herokuapp.com/api/login', {
+        var s = JSON.stringify(dataToSend)
+        fetch('http://feastbook.herokuapp.com/api/login', {
             method: 'POST',
-            body: formBody,
             headers: {
-                'Content-Type':
-                'application/x-www-form-urlencoded;charset=UTF-8',
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
             },
+            body: s,
         })
         .then((response) => response.json())
-        .then((responseJson) => {
+        .then((response) => {
             setLoading(false);
-            console.log(responseJson);
-            
-            if (responseJson.status == 'success') {
-                AsyncStorage.setItem('userID', responseJson.data.id);
-                navigation.navigate('ExploreScreen');
+            console.log(response);
+            if (response.id !== -1) {
+                AsyncStorage.setItem('userID', response.id);
+                navigation.navigate('Explore');
             }
             else {
-                setErrortext(responseJson.msg);
-                console.log('Incorrect email and/or password');
+                setErrortext(response.msg);
+                //console.log('Incorrect email and/or password');
             }
         })
         .catch((error) => {
@@ -76,7 +68,7 @@ const LoginScreen = ({navigation}) => {
                 <TextInput
                     style={styles.inputStyle}
                     onChangeText={(username) => setUsername(username)}
-                    placeholder="Email"
+                    placeholder="Username"
                     returnKeyType="next"
                     onSubmitEditing={() => 
                         passwordInputRef.current && passwordInputRef.current.focus()
@@ -102,7 +94,7 @@ const LoginScreen = ({navigation}) => {
 
             <TouchableOpacity
                 style={styles.buttonStyle}
-                onPress={() => navigation.navigate('Explore')}>
+                onPress={handleSubmitPress}>
                 <Text style={styles.buttonTextStyle}>Sign In</Text>
             </TouchableOpacity>
 

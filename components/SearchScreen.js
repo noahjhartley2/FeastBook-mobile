@@ -20,6 +20,31 @@ const SearchScreen = ({navigation}) => {
 
     const [search, setSearch] = useState('');
 
+    const handleSearch = () => {
+        let dataToSend = {
+            search: search
+        }
+        let s = JSON.stringify(dataToSend);
+        console.log(s);
+        fetch('http://feastbook.herokuapp.com/api/searchuser', {
+            method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                },
+                body: s,
+        })
+        .then((response) => response.json())
+        .then((response) => {
+            setLoading(false);
+            console.log(response.results.firstName);
+        })
+        .catch((error) => {
+            setLoading(false);
+            console.error(error);
+        });
+    }
+
     return (
         <View style={{flex: 1}}>
             <View style={styles.header}>
@@ -32,7 +57,7 @@ const SearchScreen = ({navigation}) => {
                     onChangeText={(search) => setSearch(search)}
                     placeholder="Search"
                     returnKeyType="next"
-                    onSubmitEditing={Keyboard.dismiss}
+                    onSubmitEditing={handleSearch}
             />
             <Text style={styles.textStyle}>Recently viewed:</Text>
             </ScrollView>

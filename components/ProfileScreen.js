@@ -1,4 +1,4 @@
-import React, {useState, createRef} from 'react';
+import React, {useState, createRef, useEffect} from 'react';
 import home from '../assets/icons/home.png';
 import userFilled from '../assets/icons/userFilled.png';
 import search from '../assets/icons/search.png';
@@ -14,8 +14,35 @@ import {
   ScrollView,
   Image
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const SearchScreen = ({navigation}) => { 
+
+    useEffect(() => {
+        let dataToSend = {
+            userId:AsyncStorage.getItem('userID')
+        }
+        let s = JSON.stringify(dataToSend);
+        console.log(s);
+        fetch('http://feastbook.herokuapp.com/api/searchuser', {
+            method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                },
+                body: s,
+        })
+        .then((response) => response.json())
+            .then((response) => {
+                setLoading(false);
+                console.log(response.results.firstName);
+            })
+            .catch((error) => {
+                setLoading(false);
+                console.error(error);
+            });
+    })
+
     return (
         <View style={{flex: 1}}>
             <View style={styles.header}>
