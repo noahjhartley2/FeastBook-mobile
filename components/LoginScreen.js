@@ -1,5 +1,6 @@
 import React, {useState, createRef} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import 'localstorage-polyfill'
 import {
   StyleSheet,
   TextInput,
@@ -9,6 +10,8 @@ import {
   TouchableOpacity,
   SafeAreaView,
 } from 'react-native';
+import { getDrawerStatusFromState } from '@react-navigation/drawer';
+
 
 const LoginScreen = ({navigation}) => {
     const [username, setUsername] = useState('');
@@ -17,7 +20,7 @@ const LoginScreen = ({navigation}) => {
     const [errortext, setErrortext] = useState('');
 
     const passwordInputRef = createRef();
-
+    
     const handleSubmitPress = () => {
         setErrortext('');
         if (!username) {
@@ -31,7 +34,7 @@ const LoginScreen = ({navigation}) => {
         setLoading(true);
         let dataToSend = {login: username, password: userPassword};
         var s = JSON.stringify(dataToSend)
-        fetch('http://feastbook.herokuapp.com/api/login', {
+        fetch('http://192.168.1.158:5000/api/login', {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
@@ -44,7 +47,8 @@ const LoginScreen = ({navigation}) => {
             setLoading(false);
             console.log(response);
             if (response.id !== -1) {
-                AsyncStorage.setItem('userID', response.id);
+                localStorage.setItem('username', username);
+                localStorage.setItem('userID', response.id);
                 navigation.navigate('Explore');
             }
             else {

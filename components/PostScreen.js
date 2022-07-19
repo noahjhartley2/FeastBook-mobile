@@ -3,6 +3,7 @@ import home from '../assets/icons/home.png';
 import user from '../assets/icons/user.png';
 import search from '../assets/icons/search.png';
 import plusFilled from '../assets/icons/plusFilled.png';
+import * as ImagePicker from 'expo-image-picker';
 import {
   StyleSheet,
   TextInput,
@@ -12,10 +13,36 @@ import {
   TouchableOpacity,
   SafeAreaView,
   ScrollView,
-  Image
+  Image, 
+  Button,
+  Platform,
 } from 'react-native';
 
 const PostScreen = ({navigation}) => { 
+
+    const userId = localStorage.getItem('userID');
+    const [image, setImage] = useState(null);
+    const [dishName, setDishName] = useState('');
+    const [ingredients, setIngredients] = useState('');
+    const [directions, setDirections] = useState('')
+
+  const pickImage = async () => {
+    // No permissions request is necessary for launching the image library
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsEditing: true,
+      aspect: [4, 4],
+      quality: 1,
+    });
+
+    console.log(result);
+
+    if (!result.cancelled) {
+      setImage(result.uri);
+    }
+  };
+    
+
     return (
         <View style={{flex: 1}}>
             <View style={styles.header}>
@@ -23,8 +50,56 @@ const PostScreen = ({navigation}) => {
             </View>
 
             <ScrollView style={{backgroundColor: '#1B262C'}}>
-                <Text style={styles.content}>New Post</Text>
+                <View style={styles.spacingSmall}></View>
+                <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+                    <TouchableOpacity style={styles.buttonStyle} onPress={pickImage}><Text style={styles.buttonTextStyle}>Upload Image</Text></TouchableOpacity>
+                    <View style={styles.spacingSmall}></View>
+                    {image && <Image source={{ uri: image }} style={{ width: 300, height: 300 }} />}
+                    <View style={styles.spacingSmall}></View>
+                </View>
+
+                <Text style={styles.loginPrompts}>Name of Dish</Text>
+                <TextInput
+                    style={styles.inputStyle}
+                    onChangeText={(dishName) => setDishName(dishName)}
+                    placeholder="Name of Dish"
+                    returnKeyType="next">
+                </TextInput>
+
+                <Text style={styles.loginPrompts}>Ingredients</Text>
+                <TextInput
+                    style={styles.boxStyle}
+                    onChangeText={(ingredients) => setIngredients(ingredients)}
+                    placeholder="List Ingredients"
+                    returnKeyType="next"
+                    multiline={true}>
+                </TextInput>
+
+                <Text style={styles.loginPrompts}>Directions</Text>
+                <TextInput
+                    style={styles.boxStyle}
+                    onChangeText={(directions) => setDirections(directions)}
+                    placeholder="List Directions"
+                    returnKeyType="next"
+                    multiline={true}>
+                </TextInput>
+
+                <View style={styles.spacingSmall}></View>
+
+                <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+                    <TouchableOpacity style={styles.submitButtonStyle}>
+                        <Text style={styles.submitButtonTextStyle}>Create Post</Text>
+                    </TouchableOpacity>
+                </View>
+
+                <View style={styles.spacingSmall}></View>
+                <View style={styles.spacingSmall}></View>
+                <View style={styles.spacingSmall}></View>
+                <View style={styles.spacingSmall}></View>
+
             </ScrollView>
+
+            
 
             <View style = {styles.footer}>
                 <TouchableOpacity
@@ -89,5 +164,78 @@ const styles = StyleSheet.create({
         fontFamily: 'MontserratSB',
         fontSize: 36,
         color: '#000'
-    }
+    },
+
+    buttonStyle: {
+        borderRadius: 10,
+        width: 200,
+        backgroundColor: "#0F4C75",
+        height: 30,
+        shadowColor: '#000',
+        shadowOpacity: 5,
+        elevation: 6,
+        shadowRadius: 15 ,
+        shadowOffset : { width: 1, height: 13},
+    },
+
+    submitButtonStyle: {
+        borderRadius: 10,
+        width: 300,
+        backgroundColor: "#0F4C75",
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: 40,
+        shadowColor: '#000',
+        shadowOpacity: 5,
+        elevation: 6,
+        shadowRadius: 15 ,
+        shadowOffset : { width: 1, height: 13},
+    },
+
+    buttonTextStyle: {
+        fontFamily: 'Montserrat',
+        alignSelf: 'center',
+        fontSize: 20,
+        color: '#fff'
+    },
+
+    submitButtonTextStyle: {
+        fontFamily: 'Montserrat',
+        fontSize: 24,
+        color: '#fff'
+    },
+
+    loginPrompts: {
+        fontFamily: 'Montserrat',
+        paddingLeft: 20,
+        color: '#fff',
+        fontSize:16,
+    },
+
+    inputStyle: {
+        fontFamily: 'Montserrat',
+        backgroundColor: '#fff',
+        height: 40,
+        margin: 12,
+        borderWidth: 1,
+        borderColor: '#fff',
+        borderRadius:10,
+        padding: 10,
+    },
+
+    boxStyle: {
+        fontFamily: 'Montserrat',
+        backgroundColor: '#fff',
+        height: 120,
+        margin: 12,
+        borderWidth: 1,
+        borderColor: '#fff',
+        borderRadius:10,
+        padding: 10,
+        textAlignVertical: 'top'
+    },
+
+    spacingSmall: {
+        marginTop:20
+    },
 });

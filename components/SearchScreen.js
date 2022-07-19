@@ -13,12 +13,15 @@ import {
   SafeAreaView,
   ScrollView,
   Image,
-  KeyboardAvoidingView,
+  FlatList,
 } from 'react-native';
 
 const SearchScreen = ({navigation}) => { 
 
     const [search, setSearch] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [resultsNum, setResultsNum] = useState(0);
+    const [searchResults, setSearchResults] = useState([]);
 
     const handleSearch = () => {
         let dataToSend = {
@@ -26,18 +29,31 @@ const SearchScreen = ({navigation}) => {
         }
         let s = JSON.stringify(dataToSend);
         console.log(s);
-        fetch('http://feastbook.herokuapp.com/api/searchuser', {
+        fetch('http://192.168.1.158:5000/api/searchuser', {
             method: 'POST',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                },
-                body: s,
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            },
+            body: s,
         })
         .then((response) => response.json())
         .then((response) => {
             setLoading(false);
-            console.log(response.results.firstName);
+            let arr = [];
+            for (let i = 0; i < 10; i++) {
+                if (typeof(response.results[i]) !== 'undefined') {
+                    let temp = {
+                        username: response.results[i].login,
+                        id: response.results[i].id
+                    }
+                    arr.push(temp)
+                }
+                else break;
+            }
+            arr.sort((a, b) => a.username.localeCompare(b.username, undefined, {sensitivity: 'base'}));
+            setSearchResults(arr);
+            //console.log(searchResults);
         })
         .catch((error) => {
             setLoading(false);
@@ -51,16 +67,23 @@ const SearchScreen = ({navigation}) => {
                 <Text style={styles.heading}>FeastBook</Text>
             </View>
 
-            <ScrollView style={{backgroundColor: '#1B262C'}}>
-            <TextInput
-                    style={styles.inputStyle}
-                    onChangeText={(search) => setSearch(search)}
-                    placeholder="Search"
-                    returnKeyType="next"
-                    onSubmitEditing={handleSearch}
-            />
-            <Text style={styles.textStyle}>Recently viewed:</Text>
-            </ScrollView>
+            <SafeAreaView style={{backgroundColor: '#1B262C', flex: 1}}>
+                <TextInput
+                        style={styles.inputStyle}
+                        onChangeText={(search) => setSearch(search)}
+                        placeholder="Search"
+                        returnKeyType="next"
+                        onSubmitEditing={handleSearch}
+                />
+
+                <View>
+                    <FlatList data={searchResults} renderItem={({item}) => 
+                    <TouchableOpacity onPress={()=> navigation.navigate('VisitedProfile', {visitedUser: item?.username, visitedId: item?.id})}>
+                        <Text style={styles.listStyle}>{item?.username}</Text>
+                    </TouchableOpacity>}/>
+                </View>
+
+            </SafeAreaView>
 
             <View style = {styles.footer}>
                 
@@ -143,6 +166,14 @@ const styles = StyleSheet.create({
     textStyle: {
         fontFamily: 'Montserrat',
         paddingLeft: 20,
+        color: '#fff',
+        fontSize:16,
+    },
+
+    listStyle: {
+        fontFamily: 'Montserrat',
+        paddingLeft: 20,
+        marginBottom: 7,
         color: '#fff',
         fontSize:16,
     },

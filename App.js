@@ -2,10 +2,12 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { NavigationContainer } from '@react-navigation/native';
 import { StyleSheet } from 'react-native';
 import { useFonts } from 'expo-font';
+import 'localstorage-polyfill';
 
 import LoginScreen from './components/LoginScreen'
 import RegisterScreen from './components/RegisterScreen'
 import ProfileScreen from './components/ProfileScreen'
+import VisitedProfileScreen from './components/VisitedProfileScreen'
 import SearchScreen from './components/SearchScreen'
 import ExploreScreen from './components/ExploreScreen'
 import PostScreen from './components/PostScreen'
@@ -38,6 +40,11 @@ const Auth = () => {
       <Stack.Screen
         name="Profile"
         component={ProfileScreen}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="VisitedProfile"
+        component={VisitedProfileScreen}
         options={{headerShown: false}}
       />
       <Stack.Screen
