@@ -4,18 +4,16 @@ import userFilled from '../assets/icons/userFilled.png';
 import search from '../assets/icons/search.png';
 import plus from '../assets/icons/plus.png';
 import deleteIcon from '../assets/icons/deleteIcon.png';
+import logout from '../assets/icons/logout.png';
 import {
   StyleSheet,
-  TextInput,
   View,
   Text,
-  Keyboard,
   TouchableOpacity,
   SafeAreaView,
-  ScrollView,
   Image, 
   FlatList,
-  ListItem
+  Alert,
 } from 'react-native';
 
 const ProfileScreen = ({navigation}) => { 
@@ -24,12 +22,17 @@ const ProfileScreen = ({navigation}) => {
     const userId = localStorage.getItem('userID');
     const username = localStorage.getItem('username');
     const [postResults, setPostResults] = useState([]);
+    const [value, setValue] = useState();
 
     useEffect(() => {
+        displayPosts();
+    }, []);
+
+    const displayPosts = () => {
         let dataToSend = {id: userId};
         var s = JSON.stringify(dataToSend)
         //console.log(s);
-        fetch('http://192.168.1.158:5000/api/userposts', {
+        fetch('https://feastbook.herokuapp.com/api/userposts', {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
@@ -57,15 +60,32 @@ const ProfileScreen = ({navigation}) => {
         .catch((error) => {
             console.error(error);
         });
-    }, []);
+    }
 
-    const handleDelete = postId => {
+    const delPress = (postId, postName) => {
+        Alert.alert(
+            "Delete Post",
+            "Are you sure you want to delete your recipe for " + postName + "?",
+            [
+              {
+                text: "Cancel",
+                style: "cancel"
+              },
+              { text: "Delete", 
+              onPress: () => handleDelete(postId, postName)}
+            ]
+          );
+    }
+
+    const handleDelete = async (postId, postName) => {
+        
         let dataToSend = {id: userId, postid: postId};
         var s = JSON.stringify(dataToSend)
         console.log(s);
-        fetch('http://192.168.1.158:5000/api/deletepost', {
-            method: 'POST',
+        fetch('https://feastbook.herokuapp.com/api/deletepost', {
+            method: 'DELETE',
             headers: {
+                //'Accept': 'application/json, text/plain, */*',  // It can be used to overcome cors errors
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
             },
@@ -73,26 +93,39 @@ const ProfileScreen = ({navigation}) => {
         })
         .then((response) => response.json())
         .then((response) => {
-            setLoading(false);
             console.log(response);
+            displayPosts();
         })
         .catch((error) => {
-            setLoading(false);
             console.error(error);
         });
+    }
+
+    const doLogout = () => {
+        localStorage.clear();
+        navigation.navigate('Login');
     }
 
     return (
         <View style={{flex: 1}}>
             <View style={styles.header}>
                 <Text style={styles.heading}>FeastBook</Text>
+                
             </View>
 
-            <ScrollView style={{backgroundColor: '#1B262C', flex: 1}}>
+            <SafeAreaView style={{backgroundColor: '#1B262C', flex: 1}}>
+                <View style={{flexDirection: 'row'}}>
                 <Text style={styles.username}>{username}</Text>
+                <TouchableOpacity onPress={doLogout} style={{width: 20, height: 20, paddingTop: 7}}>
+                    <Image source={logout}/>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.buttonStyle} onPress={()=>navigation.navigate('Favorites') }>
+                    <Text style={styles.buttonTextStyle}>Favorites</Text>
+                </TouchableOpacity>
+                </View>
                 <View style={styles.spacingSmall}></View>
 
-                <View>
+                <View style={{flex: 1}}>
                     <FlatList data={postResults} renderItem={({item}) => 
                         <View>
                             <Image style={styles.postImage} source={{uri: item.image}}/>
@@ -100,7 +133,7 @@ const ProfileScreen = ({navigation}) => {
                                 <Text style={styles.postName}>{item.name}</Text>
                                 <TouchableOpacity
                                     stlye={styles.buttonStyle}
-                                    onPress={()=>handleDelete(item.id)}>
+                                    onPress={()=>delPress(item.id, item.name)}>
                                     <Image source={deleteIcon} style={{width: 28, height: 28, position: 'absolute', right: 0}}/>
                                 </TouchableOpacity>
                             </View>
@@ -119,9 +152,8 @@ const ProfileScreen = ({navigation}) => {
                         </View>
                     }/>
                 </View>
-
-                <View style={styles.spacingLarge}></View>
-            </ScrollView>
+                <View style={styles.spacingSmall}></View>
+            </SafeAreaView>
 
             <View style = {styles.footer}>
                 
@@ -152,6 +184,8 @@ const styles = StyleSheet.create({
     header: {
         backgroundColor: '#0F4C75',
         alignItems: 'center',
+        justifyContent:'center',
+        flexDirection: 'row'
     },
   
     heading: {
@@ -184,10 +218,10 @@ const styles = StyleSheet.create({
     },
 
     username: {
-        marginTop: 10,
-        paddingLeft: 10,
+        marginTop: '3%',
+        paddingLeft: '3%',
         fontFamily: 'MontserratSB',
-        fontSize: 36,
+        fontSize: 30,
         color: '#fff'
     },
 
@@ -197,9 +231,9 @@ const styles = StyleSheet.create({
     },
 
     postName: {
-        marginTop: 3,
-        marginBottom: 3,
-        paddingLeft: 15,
+        marginTop: '1%',
+        marginBottom: '1%',
+        paddingLeft: '3%',
         width: '95%',
         fontFamily: 'MontserratSB',
         fontSize: 18,
@@ -207,14 +241,14 @@ const styles = StyleSheet.create({
     },
 
     postBody: {
-        paddingLeft: 10,
+        paddingLeft: '2%',
         fontFamily: 'MontserratSB',
         fontSize: 16,
         color: '#fff'
     },
 
     postText: {
-        paddingLeft: 10,
+        paddingLeft: '2%',
         fontFamily: 'Montserrat',
         fontSize: 16,
         color: '#fff'
@@ -235,5 +269,27 @@ const styles = StyleSheet.create({
 
     spacingLarge: {
         marginTop:80
+    },
+
+    buttonStyle: {
+        marginTop: '3%',
+        width: '35%',
+        borderRadius: 10,
+        backgroundColor: "#0F4C75",
+        position: 'absolute', 
+        right: '3%',
+        shadowColor: '#000',
+        shadowOpacity: 5,
+        elevation: 6,
+        shadowRadius: 15 ,
+        shadowOffset : { width: 1, height: 13},
+    },
+
+    buttonTextStyle: {
+        fontFamily: 'MontserratSB',
+        alignSelf: 'center',
+        top: 3,
+        fontSize:26,
+        color: '#fff'
     },
 });

@@ -15,6 +15,7 @@ import {
   ScrollView,
   Image, 
   Button,
+  Dimensions,
   Platform,
 } from 'react-native';
 
@@ -29,6 +30,7 @@ const PostScreen = ({navigation}) => {
     const [errortext, setErrortext] = useState('');
     const [loading, setLoading] = useState(false);
     const username = localStorage.getItem('username');
+    const height = Dimensions.get("window").height + 50;
 
     const pickImage = async () => {
         let result = await ImagePicker.launchImageLibraryAsync({
@@ -69,7 +71,7 @@ const PostScreen = ({navigation}) => {
         let dataToSend = {userid: userId, name:dishName, photo: base64Img, ingredients: ingredients, directions: directions};
         var s = JSON.stringify(dataToSend)
         console.log(s);
-        fetch('http://192.168.1.158:5000/api/createpost', {
+        fetch('https://feastbook.herokuapp.com/api/createpost', {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
@@ -90,12 +92,12 @@ const PostScreen = ({navigation}) => {
     }
 
     return (
-        <View style={{flex: 1}}>
+        <View style={{height:height}}>
             <View style={styles.header}>
                 <Text style={styles.heading}>FeastBook</Text>
             </View>
 
-            <ScrollView style={{backgroundColor: '#1B262C'}}>
+            <ScrollView style={{backgroundColor: '#1B262C', height: height}}>
                 <View style={styles.spacingSmall}></View>
                 <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
                     <TouchableOpacity style={styles.buttonStyle} onPress={pickImage}><Text style={styles.buttonTextStyle}>Upload Image</Text></TouchableOpacity>
@@ -180,7 +182,6 @@ const styles = StyleSheet.create({
     },
 
     footer: {
-        flex: 1,
         height: 40,
         position: 'absolute',
         left: 0,

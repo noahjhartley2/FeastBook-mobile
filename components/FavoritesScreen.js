@@ -3,36 +3,39 @@ import home from '../assets/icons/home.png';
 import userFilled from '../assets/icons/userFilled.png';
 import search from '../assets/icons/search.png';
 import plus from '../assets/icons/plus.png';
-import 'localstorage-polyfill';
+import dislikeIcon from '../assets/icons/dislike.png';
+
 import {
   StyleSheet,
+  TextInput,
   View,
   Text,
+  Keyboard,
   TouchableOpacity,
   SafeAreaView,
+  ScrollView,
   Image,
   FlatList
 } from 'react-native';
 
-const VisitedProfileScreen = ({route, navigation}) => { 
-
-    const [loading, setLoading] = useState(false);
-    const userId = localStorage.getItem('userID');
-    const username = localStorage.getItem('username');
+const FavoritesScreen = ({navigation}) => { 
+    
     const [postResults, setPostResults] = useState([]);
-    const {visitedUser, visitedId} = route.params;
+    const [favResults, setFavResults] = useState([]);
+    const userId = localStorage.getItem('userID');
 
     useEffect(() => {
-        displayPosts();
+        getFavorites();
     }, []);
 
-    const displayPosts = () => {
-        let dataToSend = {id: visitedId};
+    const dislike = (postId, posterId) => {
+        let dataToSend = {userid: posterId, postid: postId};
         var s = JSON.stringify(dataToSend)
-        //console.log(s);
-        fetch('https://feastbook.herokuapp.com/api/userposts', {
+        console.log(s);
+        fetch('https://feastbook.herokuapp.com/api/dislikepost', {
             method: 'POST',
             headers: {
+                //'Accept': 'application/json, text/plain, */*',  // It can be used to overcome cors errors
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
             },
@@ -40,6 +43,30 @@ const VisitedProfileScreen = ({route, navigation}) => {
         })
         .then((response) => response.json())
         .then((response) => {
+            console.log(response);
+            getFavorites();
+        })
+        .catch((error) => {
+            console.error(error);
+        });
+        
+    }
+
+    const getFavorites = () => {
+        let dataToSend = {userid: userId}
+        var s = JSON.stringify(dataToSend)
+        fetch('https://feastbook.herokuapp.com/api/getfavorite', {
+            method: 'POST',
+            headers: {
+                //'Accept': 'application/json, text/plain, */*',  // It can be used to overcome cors errors
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            },
+            body: s
+        })
+        .then((response) => response.json())
+        .then((response) => {
+            console.log(response);
             let arr = [];
             for (let i = 0; i < response.results.length; i++) {
                 let temp = {
@@ -47,13 +74,12 @@ const VisitedProfileScreen = ({route, navigation}) => {
                     image: response.results[i].photo,
                     ingredients: response.results[i].ingredients,
                     directions: response.results[i].directions,
-                    id: response.results[i]._id
+                    id: response.results[i]._id,
+                    posterId: response.results[i].userid
                 }
                 arr.push(temp);
             }
-            //console.log(response);
-            //console.log(response.results[0])
-            setPostResults(arr)
+        setFavResults(arr);
         })
         .catch((error) => {
             console.error(error);
@@ -67,17 +93,18 @@ const VisitedProfileScreen = ({route, navigation}) => {
             </View>
 
             <SafeAreaView style={{backgroundColor: '#1B262C', flex: 1}}>
-                <View style={{flexDirection: 'row'}}>
-                <Text style={styles.username}>{visitedUser}</Text>
-                </View>
-                <View style={styles.spacingSmall}></View>
 
                 <View style={{flex: 1}}>
-                    <FlatList data={postResults} renderItem={({item}) => 
+                    <FlatList data={favResults} renderItem={({item}) => 
                         <View>
                             <Image style={styles.postImage} source={{uri: item.image}}/>
                             <View style={{flexDirection: 'row'}}>
                                 <Text style={styles.postName}>{item.name}</Text>
+                                <TouchableOpacity
+                                    stlye={styles.buttonStyle}
+                                    onPress={()=>dislike(item.id, item.posterId)}>
+                                    <Image source={dislikeIcon} style={{width: 28, height: 28, position: 'absolute', right: 0}}/>
+                                </TouchableOpacity>
                             </View>
                             <View style={styles.body}>
                                 <Text style={styles.postBody}>Ingredients</Text>
@@ -98,8 +125,7 @@ const VisitedProfileScreen = ({route, navigation}) => {
             </SafeAreaView>
 
             <View style = {styles.footer}>
-                
-                <TouchableOpacity
+            <TouchableOpacity
                     stlye={styles.buttonStyle}
                     onPress={() => navigation.navigate('Explore')}>
                     <Image source={home} style={{width: 40, height: 40}}/>
@@ -114,13 +140,17 @@ const VisitedProfileScreen = ({route, navigation}) => {
                     onPress={() => navigation.navigate('Search')}>
                     <Image source={search} style={{width: 40, height: 40}}/>
                 </TouchableOpacity>
-                <Image source={userFilled} style={{width: 40, height: 40}}/>
+                <TouchableOpacity
+                    stlye={styles.buttonStyle}
+                    onPress={() => navigation.navigate('Profile')}>
+                    <Image source={userFilled} style={{width: 40, height: 40}}/>
+                </TouchableOpacity>
             </View>
         </View>
     )
 }
 
-export default VisitedProfileScreen;
+export default FavoritesScreen;
 
 const styles = StyleSheet.create({
     header: {
@@ -158,10 +188,10 @@ const styles = StyleSheet.create({
     },
 
     username: {
-        marginTop: '3%',
-        paddingLeft: '3%',
+        marginTop: 10,
+        paddingLeft: 10,
         fontFamily: 'MontserratSB',
-        fontSize: 30,
+        fontSize: 36,
         color: '#fff'
     },
 
@@ -171,8 +201,8 @@ const styles = StyleSheet.create({
     },
 
     postName: {
-        marginTop: '1%',
-        marginBottom: '1%',
+        marginTop: 3,
+        marginBottom: 3,
         paddingLeft: '3%',
         width: '95%',
         fontFamily: 'MontserratSB',
@@ -209,27 +239,5 @@ const styles = StyleSheet.create({
 
     spacingLarge: {
         marginTop:80
-    },
-
-    buttonStyle: {
-        marginTop: '3%',
-        width: '35%',
-        borderRadius: 10,
-        backgroundColor: "#0F4C75",
-        position: 'absolute', 
-        right: '3%',
-        shadowColor: '#000',
-        shadowOpacity: 5,
-        elevation: 6,
-        shadowRadius: 15 ,
-        shadowOffset : { width: 1, height: 13},
-    },
-
-    buttonTextStyle: {
-        fontFamily: 'MontserratSB',
-        alignSelf: 'center',
-        top: 3,
-        fontSize:26,
-        color: '#fff'
     },
 });

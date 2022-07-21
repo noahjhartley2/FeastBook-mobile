@@ -12,10 +12,17 @@ import SearchScreen from './components/SearchScreen'
 import ExploreScreen from './components/ExploreScreen'
 import PostScreen from './components/PostScreen'
 import SuccessfulPostScreen from './components/SuccessfulPostScreen'
+import FavoritesScreen from './components/FavoritesScreen'
 
 const Stack = createStackNavigator();
 
 const Auth = () => {
+
+  let initialRoute = 'LoginScreen'
+  const userId = localStorage.getItem('userID');
+  if (typeof(userId) !== null) {
+    initialRoute = 'ExploreScreen'
+  }
 
   const [loaded] = useFonts({
     Montserrat: require('./assets/fonts/Montserrat-Regular.ttf'),
@@ -27,7 +34,7 @@ const Auth = () => {
   }
 
   return (
-    <Stack.Navigator initialRouteName='LoginScreen'>
+    <Stack.Navigator initialRouteName={initialRoute}>
       <Stack.Screen
         name="Login"
         component={LoginScreen}
@@ -66,6 +73,11 @@ const Auth = () => {
       <Stack.Screen
         name="SuccessfulPost"
         component={SuccessfulPostScreen}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="Favorites"
+        component={FavoritesScreen}
         options={{headerShown: false}}
       />
     </Stack.Navigator>

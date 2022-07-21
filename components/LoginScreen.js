@@ -34,7 +34,7 @@ const LoginScreen = ({navigation}) => {
         setLoading(true);
         let dataToSend = {login: username, password: userPassword};
         var s = JSON.stringify(dataToSend)
-        fetch('http://192.168.1.158:5000/api/login', {
+        fetch('https://feastbook.herokuapp.com/api/login', {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',

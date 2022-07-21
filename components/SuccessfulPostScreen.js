@@ -1,24 +1,22 @@
-import React, {useState, createRef} from 'react';
+import React, {useState, createRef, useEffect, useCallback} from 'react';
 import home from '../assets/icons/home.png';
 import user from '../assets/icons/user.png';
 import search from '../assets/icons/search.png';
 import plusFilled from '../assets/icons/plusFilled.png';
-import * as ImagePicker from 'expo-image-picker';
+import checkmark from '../assets/icons/checkmark.png';
 import {
   StyleSheet,
-  TextInput,
   View,
   Text,
-  Keyboard,
   TouchableOpacity,
-  SafeAreaView,
-  ScrollView,
   Image, 
-  Button,
-  Platform,
+  RefreshControl,
+  ScrollView
 } from 'react-native';
 
 const SuccessfulPostScreen = ({navigation}) => { 
+
+    setTimeout(() => {  navigation.navigate('Explore'); }, 2000);
 
     return (
         <View style={{flex: 1}}>
@@ -26,7 +24,14 @@ const SuccessfulPostScreen = ({navigation}) => {
                 <Text style={styles.heading}>FeastBook</Text>
             </View>
 
-            <Text style={styles.heading}>Success</Text>
+            <ScrollView style={{flex: 1, backgroundColor: '#1B262C', paddingTop: '50%'}}>
+                <View style={{alignSelf: 'center', justifyContent: 'center', backgroundColor: '#1B262C'}}>
+                    <Image source={checkmark}/>
+                </View>
+                <View style={{alignSelf: 'center', backgroundColor: '#1B262C'}}>
+                    <Text style={styles.successText}>New post successful!</Text>
+                </View>
+            </ScrollView>
 
             <View style = {styles.footer}>
                 <TouchableOpacity
@@ -87,12 +92,6 @@ const styles = StyleSheet.create({
         color: "#fff"
     },
 
-    content: {
-        fontFamily: 'MontserratSB',
-        fontSize: 36,
-        color: '#000'
-    },
-
     buttonStyle: {
         borderRadius: 10,
         width: 200,
@@ -105,61 +104,10 @@ const styles = StyleSheet.create({
         shadowOffset : { width: 1, height: 13},
     },
 
-    submitButtonStyle: {
-        borderRadius: 10,
-        width: 300,
-        backgroundColor: "#0F4C75",
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: 40,
-        shadowColor: '#000',
-        shadowOpacity: 5,
-        elevation: 6,
-        shadowRadius: 15 ,
-        shadowOffset : { width: 1, height: 13},
-    },
-
-    buttonTextStyle: {
-        fontFamily: 'Montserrat',
-        alignSelf: 'center',
-        fontSize: 20,
-        color: '#fff'
-    },
-
-    submitButtonTextStyle: {
-        fontFamily: 'Montserrat',
-        fontSize: 24,
-        color: '#fff'
-    },
-
-    loginPrompts: {
-        fontFamily: 'Montserrat',
-        paddingLeft: 20,
+    successText: {
+        fontFamily: 'MontserratSB',
         color: '#fff',
-        fontSize:16,
-    },
-
-    inputStyle: {
-        fontFamily: 'Montserrat',
-        backgroundColor: '#fff',
-        height: 40,
-        margin: 12,
-        borderWidth: 1,
-        borderColor: '#fff',
-        borderRadius:10,
-        padding: 10,
-    },
-
-    boxStyle: {
-        fontFamily: 'Montserrat',
-        backgroundColor: '#fff',
-        height: 120,
-        margin: 12,
-        borderWidth: 1,
-        borderColor: '#fff',
-        borderRadius:10,
-        padding: 10,
-        textAlignVertical: 'top'
+        fontSize: 22,
     },
 
     spacingSmall: {

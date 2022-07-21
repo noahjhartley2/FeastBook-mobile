@@ -6,6 +6,7 @@ const MongoClient = require('mongodb').MongoClient;
 const  objectId = require('mongodb').ObjectId;
 const path = require('node:path');
 
+
 const url = 'mongodb+srv://dbuser:weakPASSWORD21@cluster0.ygm9c8s.mongodb.net/?retryWrites=true&w=majority'; 
 //const url = process.env.MONGODB_URI;
 
@@ -56,12 +57,13 @@ app.get("/api/posts", async (req, res, next)=>
 {
     const db = client.db("FeastBook");
    
-    db.collection('Posts').find({}).toArray((err, results) =>
+    db.collection('Posts').find({}).sort({date: -1}).toArray((err, results) =>
     {
       if (err) throw err
 
       console.log("posts displayed")
-      res.json(results)
+      let posts = {results: results, error: err};
+      res.json(posts)
     })
 })
 
@@ -322,7 +324,7 @@ app.post('/api/createpost', async (req, res, next) =>
   const {userid, name, photo, ingredients, directions} = req.body;
 
   const db = client.db("FeastBook");
-  db.collection('Posts').insertOne({userid: userid, name: name, photo: photo, likes: 0, ingredients:ingredients, directions:directions, date: new Date()})
+  db.collection('Posts').insertOne({userid: userid, name: name, photo: photo, likes: 0, ingredients:ingredients, directions:directions, favorited: [], date: new Date()})
   console.log("post added");
   bool = true;
   
@@ -344,6 +346,7 @@ app.delete('/api/deletepost', async (req, res, next) =>
   {
     if (id === user[0].userid)
     {
+      
       const result = await db.collection('Posts').deleteOne({_id: objectId(postid)})
       deleted = true;
       if (result.deletedCount > 0)
@@ -376,6 +379,114 @@ app.delete('/api/deletepost', async (req, res, next) =>
   // res.status(200).send(result);
   // let ret = { id:id, deleted: deleted, error:''};
   // res.status(200).json(ret);
+});
+
+app.post('/api/likepost', async (req, res, next) => 
+{
+  // incoming: photo, ingredients, directions
+  // outgoing: liked true or false
+
+  let error = '';
+  let bool = true;
+
+  const {userid, postid} = req.body;
+
+  const db = client.db("FeastBook");
+  const user = await db.collection('Users').find({_id: objectId(userid)}).toArray();
+  const post = await db.collection('Posts').find({_id: objectId(postid)}).toArray();
+
+  if (user.length > 0 && post.length > 0)
+  {
+    db.collection('Posts').updateOne({_id: objectId(postid)}, {$inc: {likes: 1 } }, function(err, result)
+    {
+      if (err) 
+      {
+        throw err;
+      }
+      console.log("post liked");      
+    })
+
+    db.collection('Posts').updateOne({_id: objectId(postid)}, {$push: {favorited: {id: userid}} }, function(err, result)
+    {
+      if (err) 
+      {
+        throw err;
+      }
+      console.log("user added to favorited array");      
+    })
+
+    // db.collection('Favorites').insertOne({postid: post[0]._id, userid: userid, name: post[0].name, photo: '', likes: post[0].likes, 
+    //   ingredients: post[0].ingredients, directions: post[0].directions, date: post[0].date, posterid: post[0].userid})
+    bool = true;
+  }
+  else
+  {
+    error = 'User or post does not exist';
+    bool = false;
+  }
+
+  
+  let ret = { liked:bool, error: error};
+  res.status(200).json(ret);
+});
+
+app.post('/api/dislikepost', async (req, res, next) => 
+{
+  // incoming: photo, ingredients, directions
+  // outgoing: posted or not posted
+
+  let error = '';
+  let bool = true;
+
+  const {userid, postid} = req.body;
+
+  const db = client.db("FeastBook");
+  const user = await db.collection('Users').find({_id: objectId(userid)}).toArray();
+  const post = await db.collection('Posts').find({_id: objectId(postid)}).toArray();
+
+  if (user.length > 0 && post.length > 0)
+  {
+    db.collection('Posts').updateOne({_id: objectId(postid)}, {$inc: {likes: -1 } }, function(err, result)
+    {
+      if (err) 
+      {
+        throw err;
+      }
+      console.log("post disliked");      
+    })
+
+    db.collection('Posts').updateOne({_id: objectId(postid)}, {$pull: {favorited: {id: userid}} }, function(err, result)
+    {
+      if (err) 
+      {
+        throw err;
+      }
+      console.log("user removed from favorited array");      
+    })
+
+  }
+  else
+  {
+    error = 'User or post does not exist';
+    bool = false;
+  }
+
+  bool = true;
+  
+  let ret = { disliked:bool, error: error};
+  res.status(200).json(ret);
+});
+
+app.post("/api/getfavorite", async (req, res, next)=>
+{
+  const {userid} = req.body;
+  let error = " ";
+  const db = client.db("FeastBook");
+  const results = await db.collection('Posts').find({favorited: {$elemMatch: {id: userid}}}).sort({date: -1}).toArray();
+  console.log(results);
+
+  let posts = {results: results, error: error};
+  res.status(200).json(posts)
 });
 
 rootRouter.get('(/*)?', async (req, res, next) => {

@@ -14,6 +14,7 @@ import {
   ScrollView,
   Image,
   FlatList,
+  Dimensions
 } from 'react-native';
 
 const SearchScreen = ({navigation}) => { 
@@ -22,6 +23,7 @@ const SearchScreen = ({navigation}) => {
     const [loading, setLoading] = useState(false);
     const [resultsNum, setResultsNum] = useState(0);
     const [searchResults, setSearchResults] = useState([]);
+    const height = Dimensions.get("window").height + 50;
 
     const handleSearch = () => {
         let dataToSend = {
@@ -29,7 +31,7 @@ const SearchScreen = ({navigation}) => {
         }
         let s = JSON.stringify(dataToSend);
         console.log(s);
-        fetch('http://192.168.1.158:5000/api/searchuser', {
+        fetch('https://feastbook.herokuapp.com/api/searchuser', {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
@@ -62,12 +64,12 @@ const SearchScreen = ({navigation}) => {
     }
 
     return (
-        <View style={{flex: 1}}>
+        <View style={{height: height}}>
             <View style={styles.header}>
                 <Text style={styles.heading}>FeastBook</Text>
             </View>
 
-            <SafeAreaView style={{backgroundColor: '#1B262C', flex: 1}}>
+            <SafeAreaView style={{backgroundColor: '#1B262C', height:height}}>
                 <TextInput
                         style={styles.inputStyle}
                         onChangeText={(search) => setSearch(search)}
@@ -82,11 +84,9 @@ const SearchScreen = ({navigation}) => {
                         <Text style={styles.listStyle}>{item?.username}</Text>
                     </TouchableOpacity>}/>
                 </View>
-
             </SafeAreaView>
 
             <View style = {styles.footer}>
-                
                 <TouchableOpacity
                     stlye={styles.buttonStyle}
                     onPress={() => navigation.navigate('Explore')}>
@@ -124,7 +124,6 @@ const styles = StyleSheet.create({
     },
 
     footer: {
-        flex: 1,
         height: 40,
         position: 'absolute',
         left: 0,
