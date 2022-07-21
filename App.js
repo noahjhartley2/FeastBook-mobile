@@ -11,6 +11,7 @@ import VisitedProfileScreen from './components/VisitedProfileScreen'
 import SearchScreen from './components/SearchScreen'
 import ExploreScreen from './components/ExploreScreen'
 import PostScreen from './components/PostScreen'
+import SuccessfulPostScreen from './components/SuccessfulPostScreen'
 
 const Stack = createStackNavigator();
 
@@ -60,6 +61,11 @@ const Auth = () => {
       <Stack.Screen
         name="Post"
         component={PostScreen}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="SuccessfulPost"
+        component={SuccessfulPostScreen}
         options={{headerShown: false}}
       />
     </Stack.Navigator>

@@ -24,24 +24,70 @@ const PostScreen = ({navigation}) => {
     const [image, setImage] = useState(null);
     const [dishName, setDishName] = useState('');
     const [ingredients, setIngredients] = useState('');
-    const [directions, setDirections] = useState('')
+    const [directions, setDirections] = useState('');
+    const [base64Img, setBase64Img] = useState('');
+    const [errortext, setErrortext] = useState('');
+    const [loading, setLoading] = useState(false);
+    const username = localStorage.getItem('username');
 
-  const pickImage = async () => {
-    // No permissions request is necessary for launching the image library
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
-      allowsEditing: true,
-      aspect: [4, 4],
-      quality: 1,
-    });
+    const pickImage = async () => {
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.All,
+            allowsEditing: true,
+            aspect: [4, 4],
+            quality: 1,
+            base64: true,
+        });
 
-    console.log(result);
+        //console.log(result);
 
-    if (!result.cancelled) {
-      setImage(result.uri);
+        if (!result.cancelled) {
+            setImage(result.uri);
+            setBase64Img("data:image/jpeg;base64," + result.base64);
+        }
+    };
+
+    const handleSubmitPress = () => {
+        setErrortext('');
+        if (!image) {
+            alert('Image required');
+            return;
+        }
+        if (!dishName) {
+            alert('Dish name required');
+            return;
+        }
+        if (!ingredients) {
+            alert('Ingredients required');
+            return;
+        }
+        if (!directions) {
+            alert('Directions required');
+            return;
+        }
+        setLoading(true);
+        let dataToSend = {userid: userId, name:dishName, photo: base64Img, ingredients: ingredients, directions: directions};
+        var s = JSON.stringify(dataToSend)
+        console.log(s);
+        fetch('http://192.168.1.158:5000/api/createpost', {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            },
+            body: s,
+        })
+        .then((response) => response.json())
+        .then((response) => {
+            setLoading(false);
+            console.log(response);
+            navigation.navigate('SuccessfulPost')
+        })
+        .catch((error) => {
+            setLoading(false);
+            console.error(error);
+        });
     }
-  };
-    
 
     return (
         <View style={{flex: 1}}>
@@ -54,7 +100,7 @@ const PostScreen = ({navigation}) => {
                 <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
                     <TouchableOpacity style={styles.buttonStyle} onPress={pickImage}><Text style={styles.buttonTextStyle}>Upload Image</Text></TouchableOpacity>
                     <View style={styles.spacingSmall}></View>
-                    {image && <Image source={{ uri: image }} style={{ width: 300, height: 300 }} />}
+                    {image && <Image source={{ uri: image }} style={{ width: 300, height: 300 }}/>}
                     <View style={styles.spacingSmall}></View>
                 </View>
 
@@ -87,19 +133,14 @@ const PostScreen = ({navigation}) => {
                 <View style={styles.spacingSmall}></View>
 
                 <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-                    <TouchableOpacity style={styles.submitButtonStyle}>
+                    <TouchableOpacity style={styles.submitButtonStyle} onPress={handleSubmitPress}>
                         <Text style={styles.submitButtonTextStyle}>Create Post</Text>
                     </TouchableOpacity>
                 </View>
 
-                <View style={styles.spacingSmall}></View>
-                <View style={styles.spacingSmall}></View>
-                <View style={styles.spacingSmall}></View>
-                <View style={styles.spacingSmall}></View>
+                <View style={styles.spacingLarge}></View>
 
             </ScrollView>
-
-            
 
             <View style = {styles.footer}>
                 <TouchableOpacity
@@ -237,5 +278,9 @@ const styles = StyleSheet.create({
 
     spacingSmall: {
         marginTop:20
+    },
+
+    spacingLarge: {
+        marginTop:80
     },
 });
