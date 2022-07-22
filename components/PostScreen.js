@@ -92,12 +92,12 @@ const PostScreen = ({navigation}) => {
     }
 
     return (
-        <View style={{height:height}}>
+        <View style={{flex: 1}}>
             <View style={styles.header}>
                 <Text style={styles.heading}>FeastBook</Text>
             </View>
 
-            <ScrollView style={{backgroundColor: '#1B262C', height: height}}>
+            <ScrollView style={{backgroundColor: '#1B262C', flex: 1}}>
                 <View style={styles.spacingSmall}></View>
                 <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
                     <TouchableOpacity style={styles.buttonStyle} onPress={pickImage}><Text style={styles.buttonTextStyle}>Upload Image</Text></TouchableOpacity>

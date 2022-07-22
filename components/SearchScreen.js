@@ -64,12 +64,12 @@ const SearchScreen = ({navigation}) => {
     }
 
     return (
-        <View style={{height: height}}>
+        <View style={{flex: 1}}>
             <View style={styles.header}>
                 <Text style={styles.heading}>FeastBook</Text>
             </View>
 
-            <SafeAreaView style={{backgroundColor: '#1B262C', height:height}}>
+            <SafeAreaView style={{backgroundColor: '#1B262C', flex: 1}}>
                 <TextInput
                         style={styles.inputStyle}
                         onChangeText={(search) => setSearch(search)}
