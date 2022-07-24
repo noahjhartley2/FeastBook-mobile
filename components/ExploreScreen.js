@@ -21,13 +21,14 @@ import {
 const ExploreScreen = ({navigation}) => { 
     
     const [postResults, setPostResults] = useState([]);
+    const [posterNames, setPosterNames] = useState([]);
     const [favResults, setFavResults] = useState([]);
     const userId = localStorage.getItem('userID');
-    const [isFaved, setIsFaved] = useState(false)
+    const [isFaved, setIsFaved] = useState(false);
 
     useEffect(() => {
         displayPosts();
-        getFavorites();
+        getPosterName();
     }, []);
 
     const displayPosts = () => {
@@ -43,23 +44,59 @@ const ExploreScreen = ({navigation}) => {
             console.log(response.results[0].userid)
             let arr = [];
             for (let i = 0; i < response.results.length; i++) {
+
                 let temp = {
                     name: response.results[i].name,
                     image: response.results[i].photo,
                     ingredients: response.results[i].ingredients,
                     directions: response.results[i].directions,
                     id: response.results[i]._id,
-                    posterId: response.results[i].userid
+                    posterId: response.results[i].userid,
                 }
                 arr.push(temp);
             }
-            //console.log(response);
-            //console.log(response.results[0])
             setPostResults(arr)
         })
         .catch((error) => {
             console.error(error);
         });
+    }
+
+    const getPosterName = (posterId) => {
+        let arr = [];
+        for (let i = 0; i < postResults.length; i++) {
+            let dataToSend = {userid: postResults[i].posterId}
+            var s = JSON.stringify(dataToSend)
+            fetch('https://feastbook.herokuapp.com/api/getuserinfo', {
+                
+                method: 'POST',
+                headers: {
+                    //'Accept': 'application/json, text/plain, */*',  // It can be used to overcome cors errors
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                },
+                body: s
+            })
+            .then((response) => response.json())
+            .then((response) => {
+                console.log(response.results[0].login)
+                let temp = {
+                    posterName: response.results[0].login,
+                    name: postResults[i].name,
+                    image: postResults[i].image,
+                    ingredients: postResults[i].ingredients,
+                    directions: postResults[i].directions,
+                    id: postResults[i].id,
+                    posterId: postResults[i].posterId,
+                }
+                console.log(temp);
+                arr.push(temp);
+            })
+            .catch((error) => {
+                console.error(error);
+            });
+        }
+        setPosterNames(arr);
     }
 
     const addLike = (postId, posterId) => {
@@ -84,37 +121,6 @@ const ExploreScreen = ({navigation}) => {
         });
     }
 
-    const getFavorites = () => {
-        let dataToSend = {userid: userId}
-        var s = JSON.stringify(dataToSend)
-        fetch('https://feastbook.herokuapp.com/api/getfavorite', {
-            
-            method: 'POST',
-            headers: {
-                //'Accept': 'application/json, text/plain, */*',  // It can be used to overcome cors errors
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-            },
-            body: s
-        })
-        .then((response) => response.json())
-        .then((response) => {
-            let arr = [];
-            for (let i = 0; i < response.results.length; i++) {
-                let temp = {
-                    favUserId: response.results[i].userid,
-                    favPostId: response.results[i]._id,
-                }
-                arr.push(temp);
-            }
-        setFavResults(arr);
-
-        })
-        .catch((error) => {
-            console.error(error);
-        });
-    }
-
     const isFavorited = (postId) => {
         setIsFaved(false)
         for (let i = 0; i < favResults.length; i++) {
@@ -131,8 +137,11 @@ const ExploreScreen = ({navigation}) => {
             <SafeAreaView style={{backgroundColor: '#1B262C', flex: 1}}>
 
                 <View style={{flex: 1}}>
-                    <FlatList data={postResults} renderItem={({item}) => 
+                    <FlatList data={posterNames} renderItem={({item}) => 
                         <View>
+                            <TouchableOpacity onPress={()=> navigation.navigate('VisitedProfile', {visitedUser: item?.posterName, visitedId: item?.posterId})}>
+                                <Text style={styles.postName}>{item.posterName}</Text>
+                            </TouchableOpacity>
                             <Image style={styles.postImage} source={{uri: item.image}}/>
                             <View style={{flexDirection: 'row'}}>
                                 <Text style={styles.postName}>{item.name}</Text>
