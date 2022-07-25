@@ -1,4 +1,5 @@
 import React, {useState, createRef} from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import 'localstorage-polyfill'
 import {
   StyleSheet,
@@ -9,27 +10,24 @@ import {
   TouchableOpacity,
   SafeAreaView,
 } from 'react-native';
+import { getDrawerStatusFromState } from '@react-navigation/drawer';
 
-const LoginScreen = ({navigation}) => {
-    const [username, setUsername] = useState('');
-    const [userPassword, setUserPassword] = useState('');
+
+const PasswordResetScreen = ({navigation}) => {
+    const [email, setEmail] = useState('');
+    const [loading, setLoading] = useState(false);
     const [errortext, setErrortext] = useState('');
-
-    const passwordInputRef = createRef();
     
     const handleSubmitPress = () => {
         setErrortext('');
-        if (!username) {
-            alert('Email required');
+        if (!email) {
+            setErrortext('Email required');
             return;
         }
-        if (!userPassword) {
-            alert('Password required');
-            return;
-        }
-        let dataToSend = {login: username, password: userPassword};
+        setLoading(true);
+        let dataToSend = {email: email};
         var s = JSON.stringify(dataToSend)
-        fetch('https://feastbook.herokuapp.com/api/login', {
+        fetch('https://feastbook.herokuapp.com/api/forgotpassword', {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
@@ -39,22 +37,17 @@ const LoginScreen = ({navigation}) => {
         })
         .then((response) => response.json())
         .then((response) => {
+            setLoading(false);
             console.log(response);
-            if (response.id !== -1) {
-                localStorage.setItem('username', username);
-                localStorage.setItem('userID', response.id);
-                if (response.error === "Not verified check email") {
-                    navigation.navigate('EmailVerification')
-                }
-                else {
-                    navigation.navigate('Explore')
-                }
+            if (response.status === 400) {
+                setErrortext("User not found")
             }
             else {
-                setErrortext('Incorrect email and/or password')
+                navigation.navigate('PWResetSuccessful')
             }
         })
         .catch((error) => {
+            setLoading(false);
             console.error(error);
         });
     }
@@ -65,24 +58,12 @@ const LoginScreen = ({navigation}) => {
                 <Text style={styles.heading}>FeastBook</Text>
             </View>
             <SafeAreaView style={styles.SafeAreaView}>
-                <Text style={styles.loginPrompts}>Username</Text>
+                <Text style={styles.loginPrompts}>Pleast enter your email</Text>
                 <TextInput
                     style={styles.inputStyle}
-                    onChangeText={(username) => setUsername(username)}
-                    placeholder="Username"
+                    onChangeText={(email) => setEmail(email)}
+                    placeholder="Email"
                     returnKeyType="next"
-                    onSubmitEditing={() => 
-                        passwordInputRef.current && passwordInputRef.current.focus()
-                    }
-                />
-                <Text style={styles.loginPrompts}>Password</Text>
-                <TextInput
-                    style={styles.inputStyle}
-                    onChangeText={(userPassword) => setUserPassword(userPassword)}
-                    placeholder="Password"
-                    secureTextEntry={true}
-                    returnKeyType="next"
-                    onSubmitEditing={Keyboard.dismiss}
                 />
             </SafeAreaView>
             {errortext != '' ? (
@@ -96,15 +77,7 @@ const LoginScreen = ({navigation}) => {
             <TouchableOpacity
                 style={styles.buttonStyle}
                 onPress={handleSubmitPress}>
-                <Text style={styles.buttonTextStyle}>Sign In</Text>
-            </TouchableOpacity>
-
-            <View style={styles.spacingSmall}></View>
-
-            <TouchableOpacity
-                stlye={styles.buttonStyle}
-                onPress={() => navigation.navigate('PasswordReset')}>
-                <Text style={styles.buttonTextStyle}>Forgot password?</Text>
+                <Text style={styles.buttonTextStyle}>Reset Password</Text>
             </TouchableOpacity>
 
             <View style={styles.spacingSmall}></View>
@@ -113,8 +86,8 @@ const LoginScreen = ({navigation}) => {
 
             <TouchableOpacity
                 stlye={styles.buttonStyle}
-                onPress={() => navigation.navigate('Register')}>
-                <Text style={styles.buttonTextStyle}>New user? Click here to register!</Text>
+                onPress={() => navigation.navigate('Login')}>
+                <Text style={styles.buttonTextStyle}>Click here to return to login</Text>
             </TouchableOpacity>
 
             <View style={styles.fill}></View>
@@ -122,7 +95,7 @@ const LoginScreen = ({navigation}) => {
     );
 };
 
-export default LoginScreen;
+export default PasswordResetScreen;
 
 const styles = StyleSheet.create({
     header: {

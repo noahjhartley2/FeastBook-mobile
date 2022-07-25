@@ -23,6 +23,7 @@ const ProfileScreen = ({navigation}) => {
     const username = localStorage.getItem('username');
     const [postResults, setPostResults] = useState([]);
     const [value, setValue] = useState();
+    const [noPosts, setNoPosts] = useState('');
 
     useEffect(() => {
         displayPosts();
@@ -43,6 +44,7 @@ const ProfileScreen = ({navigation}) => {
         .then((response) => response.json())
         .then((response) => {
             let arr = [];
+            if (response.results.length === 0) setNoPosts("No posts yet")
             for (let i = 0; i < response.results.length; i++) {
                 let temp = {
                     name: response.results[i].name,
@@ -126,6 +128,11 @@ const ProfileScreen = ({navigation}) => {
                 <View style={styles.spacingSmall}></View>
 
                 <View style={{flex: 1}}>
+                {noPosts != '' ? (
+                <Text style={styles.noPostText}>
+                    {noPosts}
+                </Text>
+            ) : null}
                     <FlatList data={postResults} renderItem={({item}) => 
                         <View>
                             <Image style={styles.postImage} source={{uri: item.image}}/>
@@ -221,7 +228,7 @@ const styles = StyleSheet.create({
         marginTop: '3%',
         paddingLeft: '3%',
         fontFamily: 'MontserratSB',
-        fontSize: 30,
+        fontSize: 26,
         color: '#fff'
     },
 
@@ -290,6 +297,14 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         top: 3,
         fontSize:26,
+        color: '#fff'
+    },
+
+    noPostText: {
+        marginTop: '8%',
+        fontFamily: 'Montserrat',
+        alignSelf: 'center',
+        fontSize:18,
         color: '#fff'
     },
 });

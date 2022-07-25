@@ -25,27 +25,27 @@ const RegisterScreen = ({navigation}) => {
     const handleSubmitPress = () => {
         setErrortext('');
         if (!firstName || !lastName) {
-            alert('First and last name required');
+            setErrortext('First and last name required');
             return;
         }
         if (!username) {
-            alert('Username required');
+            setErrortext('Username required');
             return;
         }
         if (!userEmail) {
-            alert('Email required');
+            setErrortext('Email required');
             return;
         }
         if (!userPassword1) {
-            alert('Password required');
+            setErrortext('Password required');
             return;
         }
         if (!userPassword2) {
-            alert('Passwords must match');
+            setErrortext('Passwords must match');
             return;
         }
         if (userPassword1 !== userPassword2) {
-            alert('Passwords must match');
+            setErrortext('Passwords must match');
             return;
         }
         setLoading(true);
@@ -71,10 +71,10 @@ const RegisterScreen = ({navigation}) => {
             console.log(response);
             
             if (response.added === true) {
-                navigation.navigate('LoginScreen');
+                navigation.navigate('EmailVerification');
             }
             else {
-                setErrortext(responseJson.msg);
+                setErrortext("Username and/or email already in use");
                 console.log('Registration unsuccessful');
             }
         })
@@ -179,6 +179,8 @@ const RegisterScreen = ({navigation}) => {
                     onPress={() => navigation.navigate('Login')}>
                     <Text style={styles.buttonTextStyle}>Already registered? Click here to sign in!</Text>
                 </TouchableOpacity>
+
+                
                 <View style={styles.spacingSmall}></View>
             </ScrollView>
             <View style={styles.fill}></View>
@@ -261,5 +263,12 @@ const styles = StyleSheet.create({
 
     fill: {
         marginTop: 3000
+    },
+
+    errorTextStyle: {
+        fontFamily: 'Montserrat',
+        alignSelf: 'center',
+        fontSize:18,
+        color: 'red'
     }
   });

@@ -52,19 +52,19 @@ const PostScreen = ({navigation}) => {
     const handleSubmitPress = () => {
         setErrortext('');
         if (!image) {
-            alert('Image required');
+            setErrortext('Image required');
             return;
         }
         if (!dishName) {
-            alert('Dish name required');
+            setErrortext('Dish name required');
             return;
         }
         if (!ingredients) {
-            alert('Ingredients required');
+            setErrortext('Ingredients required');
             return;
         }
         if (!directions) {
-            alert('Directions required');
+            setErrortext('Directions required');
             return;
         }
         setLoading(true);
@@ -133,6 +133,12 @@ const PostScreen = ({navigation}) => {
                 </TextInput>
 
                 <View style={styles.spacingSmall}></View>
+
+                {errortext != '' ? (
+                <Text style={styles.errorTextStyle}>
+                    {errortext}
+                </Text>
+            ) : null}
 
                 <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
                     <TouchableOpacity style={styles.submitButtonStyle} onPress={handleSubmitPress}>
@@ -284,4 +290,12 @@ const styles = StyleSheet.create({
     spacingLarge: {
         marginTop:80
     },
+
+    errorTextStyle: {
+        fontFamily: 'Montserrat',
+        alignSelf: 'center',
+        fontSize:18,
+        color: 'red',
+        marginBottom: 20,
+    }
 });

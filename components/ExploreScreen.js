@@ -1,4 +1,4 @@
-import React, {useState, createRef, useEffect} from 'react';
+import React, {useState, createRef, useEffect, useLayoutEffect} from 'react';
 import homeFilled from '../assets/icons/homeFilled.png';
 import user from '../assets/icons/user.png';
 import search from '../assets/icons/search.png';
@@ -7,7 +7,6 @@ import like from '../assets/icons/like.png';
 
 import {
   StyleSheet,
-  TextInput,
   View,
   Text,
   Keyboard,
@@ -15,20 +14,30 @@ import {
   SafeAreaView,
   ScrollView,
   Image,
-  FlatList
+  FlatList,
+  RefreshControl
 } from 'react-native';
+
+const wait = (timeout) => {
+    return new Promise(resolve => setTimeout(resolve, timeout));
+}
 
 const ExploreScreen = ({navigation}) => { 
     
     const [postResults, setPostResults] = useState([]);
     const [posterNames, setPosterNames] = useState([]);
-    const [favResults, setFavResults] = useState([]);
     const userId = localStorage.getItem('userID');
-    const [isFaved, setIsFaved] = useState(false);
+    const [refreshing, setRefreshing] = React.useState(false);
+
+    const onRefresh = React.useCallback(() => {
+        setRefreshing(true);
+        displayPosts();
+        wait(1000).then(() => setRefreshing(false));
+    }, []);
 
     useEffect(() => {
         displayPosts();
-        getPosterName();
+        //getPosterName();
     }, []);
 
     const displayPosts = () => {
@@ -62,7 +71,7 @@ const ExploreScreen = ({navigation}) => {
         });
     }
 
-    const getPosterName = (posterId) => {
+   const getPosterName = () => {
         let arr = [];
         for (let i = 0; i < postResults.length; i++) {
             let dataToSend = {userid: postResults[i].posterId}
@@ -88,6 +97,7 @@ const ExploreScreen = ({navigation}) => {
                     directions: postResults[i].directions,
                     id: postResults[i].id,
                     posterId: postResults[i].posterId,
+                    likes: postResults[i].likes,
                 }
                 console.log(temp);
                 arr.push(temp);
@@ -98,6 +108,7 @@ const ExploreScreen = ({navigation}) => {
         }
         setPosterNames(arr);
     }
+
 
     const addLike = (postId, posterId) => {
         let dataToSend = {userid: posterId, postid: postId};
@@ -121,36 +132,39 @@ const ExploreScreen = ({navigation}) => {
         });
     }
 
-    const isFavorited = (postId) => {
-        setIsFaved(false)
-        for (let i = 0; i < favResults.length; i++) {
-            if (postId === favResults[i]._id) setIsFaved(true)
-        }
-    }
-
     return (
         <View style={{flex: 1}}>
             <View style={styles.header}>
                 <Text style={styles.heading}>FeastBook</Text>
             </View>
 
-            <SafeAreaView style={{backgroundColor: '#1B262C', flex: 1}}>
+            <SafeAreaView style={{backgroundColor: '#1B262C', flex: 1} }>
 
                 <View style={{flex: 1}}>
-                    <FlatList data={posterNames} renderItem={({item}) => 
+                    <FlatList data={postResults} 
+                        refreshing={refreshing}
+                        onRefresh={onRefresh}
+                        enabled={true} 
+                        renderItem={({item}) => 
+                        
                         <View>
+                            
                             <TouchableOpacity onPress={()=> navigation.navigate('VisitedProfile', {visitedUser: item?.posterName, visitedId: item?.posterId})}>
                                 <Text style={styles.postName}>{item.posterName}</Text>
                             </TouchableOpacity>
+
                             <Image style={styles.postImage} source={{uri: item.image}}/>
+
                             <View style={{flexDirection: 'row'}}>
                                 <Text style={styles.postName}>{item.name}</Text>
+                                <Text style={styles.buttonStyle}>{item.likes}</Text>
                                 <TouchableOpacity
                                     stlye={styles.buttonStyle}
                                     onPress={()=>addLike(item.id, item.posterId)}>
                                     <Image source={like} style={{width: 28, height: 28, position: 'absolute', right: 0}}/>
                                 </TouchableOpacity>
                             </View>
+
                             <View style={styles.body}>
                                 <Text style={styles.postBody}>Ingredients</Text>
                                 <Text style={styles.postText}>{item.ingredients}</Text>
@@ -162,6 +176,7 @@ const ExploreScreen = ({navigation}) => {
                                 <Text style={styles.postBody}>Directions</Text>
                                 <Text style={styles.postText}>{item.directions}</Text>
                             </View>
+
                             <View style={{marginTop:30}}></View>
                         </View>
                     }/>
