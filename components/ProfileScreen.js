@@ -36,6 +36,7 @@ const ProfileScreen = ({navigation}) => {
         fetch('https://feastbook.herokuapp.com/api/userposts', {
             method: 'POST',
             headers: {
+                'Authorization':'Bearer ' + localStorage.getItem('token'),
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
             },
@@ -88,6 +89,7 @@ const ProfileScreen = ({navigation}) => {
             method: 'DELETE',
             headers: {
                 //'Accept': 'application/json, text/plain, */*',  // It can be used to overcome cors errors
+                'Authorization':'Bearer ' + localStorage.getItem('token'),
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
             },

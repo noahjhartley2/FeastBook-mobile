@@ -20,11 +20,11 @@ const LoginScreen = ({navigation}) => {
     const handleSubmitPress = () => {
         setErrortext('');
         if (!username) {
-            alert('Email required');
+            setErrortext('Email required');
             return;
         }
         if (!userPassword) {
-            alert('Password required');
+            setErrortext('Password required');
             return;
         }
         let dataToSend = {login: username, password: userPassword};
@@ -43,6 +43,7 @@ const LoginScreen = ({navigation}) => {
             if (response.id !== -1) {
                 localStorage.setItem('username', username);
                 localStorage.setItem('userID', response.id);
+                localStorage.setItem('token', response.token)
                 if (response.error === "Not verified check email") {
                     navigation.navigate('EmailVerification')
                 }

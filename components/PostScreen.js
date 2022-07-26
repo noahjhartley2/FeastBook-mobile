@@ -74,6 +74,7 @@ const PostScreen = ({navigation}) => {
         fetch('https://feastbook.herokuapp.com/api/createpost', {
             method: 'POST',
             headers: {
+                'Authorization':'Bearer ' + localStorage.getItem('token'),
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
             },

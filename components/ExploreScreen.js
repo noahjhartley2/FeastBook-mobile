@@ -4,7 +4,7 @@ import user from '../assets/icons/user.png';
 import search from '../assets/icons/search.png';
 import plus from '../assets/icons/plus.png';
 import like from '../assets/icons/like.png';
-
+import 'localstorage-polyfill'
 import {
   StyleSheet,
   View,
@@ -15,7 +15,8 @@ import {
   ScrollView,
   Image,
   FlatList,
-  RefreshControl
+  RefreshControl,
+  ToastAndroid
 } from 'react-native';
 
 const wait = (timeout) => {
@@ -28,6 +29,7 @@ const ExploreScreen = ({navigation}) => {
     const [posterNames, setPosterNames] = useState([]);
     const userId = localStorage.getItem('userID');
     const [refreshing, setRefreshing] = React.useState(false);
+    const [currPostName, setCurrPostName] = useState('');
 
     const onRefresh = React.useCallback(() => {
         setRefreshing(true);
@@ -35,15 +37,20 @@ const ExploreScreen = ({navigation}) => {
         wait(1000).then(() => setRefreshing(false));
     }, []);
 
+    const addMessage = () => {
+        let str = 'Added ' + currPostName + ' to favorites'
+        ToastAndroid.show(str, ToastAndroid.SHORT);
+    }
+
     useEffect(() => {
         displayPosts();
-        //getPosterName();
     }, []);
 
     const displayPosts = () => {
         fetch('https://feastbook.herokuapp.com/api/posts', {
             method: 'GET',
             headers: {
+                'Authorization':'Bearer ' + localStorage.getItem('token'),
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
             },
@@ -61,6 +68,7 @@ const ExploreScreen = ({navigation}) => {
                     directions: response.results[i].directions,
                     id: response.results[i]._id,
                     posterId: response.results[i].userid,
+                    posterName: response.results[i].login,
                 }
                 arr.push(temp);
             }
@@ -71,53 +79,15 @@ const ExploreScreen = ({navigation}) => {
         });
     }
 
-   const getPosterName = () => {
-        let arr = [];
-        for (let i = 0; i < postResults.length; i++) {
-            let dataToSend = {userid: postResults[i].posterId}
-            var s = JSON.stringify(dataToSend)
-            fetch('https://feastbook.herokuapp.com/api/getuserinfo', {
-                
-                method: 'POST',
-                headers: {
-                    //'Accept': 'application/json, text/plain, */*',  // It can be used to overcome cors errors
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                },
-                body: s
-            })
-            .then((response) => response.json())
-            .then((response) => {
-                console.log(response.results[0].login)
-                let temp = {
-                    posterName: response.results[0].login,
-                    name: postResults[i].name,
-                    image: postResults[i].image,
-                    ingredients: postResults[i].ingredients,
-                    directions: postResults[i].directions,
-                    id: postResults[i].id,
-                    posterId: postResults[i].posterId,
-                    likes: postResults[i].likes,
-                }
-                console.log(temp);
-                arr.push(temp);
-            })
-            .catch((error) => {
-                console.error(error);
-            });
-        }
-        setPosterNames(arr);
-    }
-
-
-    const addLike = (postId, posterId) => {
+    const addLike = (postId, posterId, postName) => {
+        ToastAndroid.show('Added ' + postName + ' to favorites', ToastAndroid.SHORT);
         let dataToSend = {userid: posterId, postid: postId};
         var s = JSON.stringify(dataToSend)
         console.log(s);
         fetch('https://feastbook.herokuapp.com/api/likepost', {
             method: 'POST',
             headers: {
-                //'Accept': 'application/json, text/plain, */*',  // It can be used to overcome cors errors
+                'Authorization':'Bearer ' + localStorage.getItem('token'),
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
             },
@@ -157,10 +127,11 @@ const ExploreScreen = ({navigation}) => {
 
                             <View style={{flexDirection: 'row'}}>
                                 <Text style={styles.postName}>{item.name}</Text>
+                                <Text>{item.likedMessage}</Text>
                                 <Text style={styles.buttonStyle}>{item.likes}</Text>
                                 <TouchableOpacity
                                     stlye={styles.buttonStyle}
-                                    onPress={()=>addLike(item.id, item.posterId)}>
+                                    onPress={()=>addLike(item.id, item.posterId, item.name)}>
                                     <Image source={like} style={{width: 28, height: 28, position: 'absolute', right: 0}}/>
                                 </TouchableOpacity>
                             </View>

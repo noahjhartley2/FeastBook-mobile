@@ -24,7 +24,7 @@ const PWResetSuccessful = ({navigation}) => {
 
             <ScrollView style={{flex: 1, backgroundColor: '#1B262C', paddingTop: '50%'}}>
                 <View style={{alignSelf: 'center', backgroundColor: '#1B262C', width: '80%'}}>
-                    <Text style={styles.successText}>Instructions for resetting password have been sent to your email.</Text>
+                    <Text style={styles.successText}>Password Updated</Text>
                 </View>
 
                 <View style={styles.spacingSmall}></View>

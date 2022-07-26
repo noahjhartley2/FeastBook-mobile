@@ -13,21 +13,35 @@ import {
 import { getDrawerStatusFromState } from '@react-navigation/drawer';
 
 
-const PasswordResetScreen = ({navigation}) => {
-    const [email, setEmail] = useState('');
+const PasswordResetScreen2 = ({navigation}) => {
+    const [code, setCode] = useState('');
+    const [password1, setPassword1] = useState('');
+    const [password2, setPassword2] = useState('');
     const [loading, setLoading] = useState(false);
     const [errortext, setErrortext] = useState('');
     
     const handleSubmitPress = () => {
         setErrortext('');
-        if (!email) {
-            setErrortext('Email required');
+        if (!code) {
+            setErrortext('Code required');
+            return;
+        }
+        if (!password1) {
+            setErrortext('Password required');
+            return;
+        }
+        if (!password2) {
+            setErrortext('Password required');
+            return;
+        }
+        if (password1 !== password2) {
+            setErrortext('Passwords must match');
             return;
         }
         setLoading(true);
-        let dataToSend = {email: email};
+        let dataToSend = {otp: code, newPassword1: password1, newPassword2: password2};
         var s = JSON.stringify(dataToSend)
-        fetch('https://feastbook.herokuapp.com/api/forgotpassword', {
+        fetch('https://feastbook.herokuapp.com/api/resetpassword', {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
@@ -39,11 +53,11 @@ const PasswordResetScreen = ({navigation}) => {
         .then((response) => {
             setLoading(false);
             console.log(response);
-            if (response.error === "Invalid Email") {
-                setErrortext("User not found")
+            if (response.error === "invalid token") {
+                setErrortext("Invalid Token")
             }
             else {
-                navigation.navigate('PasswordReset2')
+                navigation.navigate('PWResetSuccessful')
             }
         })
         .catch((error) => {
@@ -58,11 +72,33 @@ const PasswordResetScreen = ({navigation}) => {
                 <Text style={styles.heading}>FeastBook</Text>
             </View>
             <SafeAreaView style={styles.SafeAreaView}>
-                <Text style={styles.loginPrompts}>Pleast enter your email</Text>
+                <Text style={styles.emailPrompt}>A verification code was sent to your email. Please enter it below.</Text>
+
+                <View style={styles.spacingSmall}></View>
+
+                <Text style={styles.loginPrompts}>Enter the verification code</Text>
                 <TextInput
                     style={styles.inputStyle}
-                    onChangeText={(email) => setEmail(email)}
-                    placeholder="Email"
+                    onChangeText={(code) => setCode(code)}
+                    placeholder="Verification Code"
+                    returnKeyType="next"
+                />
+
+                <Text style={styles.loginPrompts}>New Password</Text>
+                <TextInput
+                    style={styles.inputStyle}
+                    onChangeText={(password1) => setPassword1(password1)}
+                    secureTextEntry={true}
+                    placeholder="New Password"
+                    returnKeyType="next"
+                />
+
+                <Text style={styles.loginPrompts}>Re-enter New Password</Text>
+                <TextInput
+                    style={styles.inputStyle}
+                    onChangeText={(password2) => setPassword2(password2)}
+                    secureTextEntry={true}
+                    placeholder="Re-enter New Password"
                     returnKeyType="next"
                 />
             </SafeAreaView>
@@ -77,7 +113,7 @@ const PasswordResetScreen = ({navigation}) => {
             <TouchableOpacity
                 style={styles.buttonStyle}
                 onPress={handleSubmitPress}>
-                <Text style={styles.buttonTextStyle}>Send code</Text>
+                <Text style={styles.buttonTextStyle}>Update Password</Text>
             </TouchableOpacity>
 
             <View style={styles.spacingSmall}></View>
@@ -95,7 +131,7 @@ const PasswordResetScreen = ({navigation}) => {
     );
 };
 
-export default PasswordResetScreen;
+export default PasswordResetScreen2;
 
 const styles = StyleSheet.create({
     header: {
@@ -124,6 +160,13 @@ const styles = StyleSheet.create({
         paddingLeft: 20,
         color: '#fff',
         fontSize:16,
+    },
+
+    emailPrompt: {
+        fontFamily: 'MontserratSB',
+        paddingLeft: 20,
+        color: '#fff',
+        fontSize:18,
     },
 
     inputStyle: {

@@ -4,6 +4,7 @@ import userFilled from '../assets/icons/userFilled.png';
 import search from '../assets/icons/search.png';
 import plus from '../assets/icons/plus.png';
 import dislikeIcon from '../assets/icons/dislike.png';
+import 'localstorage-polyfill';
 
 import {
   StyleSheet,
@@ -36,6 +37,7 @@ const FavoritesScreen = ({navigation}) => {
             method: 'POST',
             headers: {
                 //'Accept': 'application/json, text/plain, */*',  // It can be used to overcome cors errors
+                'Authorization':'Bearer ' + localStorage.getItem('token'),
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
             },
@@ -49,7 +51,6 @@ const FavoritesScreen = ({navigation}) => {
         .catch((error) => {
             console.error(error);
         });
-        
     }
 
     const getFavorites = () => {
@@ -59,6 +60,7 @@ const FavoritesScreen = ({navigation}) => {
             method: 'POST',
             headers: {
                 //'Accept': 'application/json, text/plain, */*',  // It can be used to overcome cors errors
+                'Authorization':'Bearer ' + localStorage.getItem('token'),
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
             },
@@ -75,7 +77,8 @@ const FavoritesScreen = ({navigation}) => {
                     ingredients: response.results[i].ingredients,
                     directions: response.results[i].directions,
                     id: response.results[i]._id,
-                    posterId: response.results[i].userid
+                    posterId: response.results[i].userid,
+                    posterName: response.results[i].login
                 }
                 arr.push(temp);
             }
@@ -97,6 +100,11 @@ const FavoritesScreen = ({navigation}) => {
                 <View style={{flex: 1}}>
                     <FlatList data={favResults} renderItem={({item}) => 
                         <View>
+
+                            <TouchableOpacity onPress={()=> navigation.navigate('VisitedProfile', {visitedUser: item?.posterName, visitedId: item?.posterId})}>
+                                <Text style={styles.postName}>{item.posterName}</Text>
+                            </TouchableOpacity>
+
                             <Image style={styles.postImage} source={{uri: item.image}}/>
                             <View style={{flexDirection: 'row'}}>
                                 <Text style={styles.postName}>{item.name}</Text>

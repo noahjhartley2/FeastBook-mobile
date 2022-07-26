@@ -16,6 +16,7 @@ import SuccessfulRegistrationScreen from './components/SuccessfulRegistrationScr
 import FavoritesScreen from './components/FavoritesScreen'
 import EmailVerificationScreen from './components/EmailVerificationScreen'
 import PasswordResetScreen from './components/PasswordResetScreen'
+import PasswordResetScreen2 from './components/PasswordResetScreen2'
 import PWResetSuccessful from './components/PWResetSuccessful'
 
 const Stack = createStackNavigator();
@@ -97,6 +98,11 @@ const Auth = () => {
       <Stack.Screen
         name="PasswordReset"
         component={PasswordResetScreen}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="PasswordReset2"
+        component={PasswordResetScreen2}
         options={{headerShown: false}}
       />
       <Stack.Screen
